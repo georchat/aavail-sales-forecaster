@@ -13,6 +13,7 @@ plt.style.use('seaborn')
 
 ## import functions to load the data
 from data_ingestion import load_feature_matrix
+from data_ingestion import DEV
 
 SMALL_SIZE = 12
 MEDIUM_SIZE = 14
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     run_start = time.time()
     print("...plotting")
     
-    df = load_feature_matrix(training=True, clean=False)
+    df = load_feature_matrix(dev=DEV, clean=False)
     create_plots(df)
     
     m, s = divmod(time.time()-run_start,60)

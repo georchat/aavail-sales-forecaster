@@ -1,0 +1,4 @@
+unique_id,timestamp,tag,y_pred,target_date,runtime,model_version,model_note
+145c472a-cb44-4b0f-92ee-b21aa6d89f86,1588936350.589678,TOTAL,[183770.305],2018-01-05,000:00:00,0.1,supervised learing model for time-series
+67ebeaef-ef8f-4edb-bfa8-f91089b95847,1588937599.6810393,TOTAL,[183770.305],2018-01-05,000:00:01,0.1,supervised learing model for time-series
+c39714e0-17b8-438d-bb60-5cdb34225c11,1588937871.577558,TOTAL,[183770.305],2018-01-05,000:00:00,0.1,supervised learing model for time-series

@@ -10,13 +10,14 @@ from datetime import datetime
 ## Project directories
 PROJECT_ROOT_DIR = "."
 DATA_DIR = os.path.join("data")
+DEV = True
    
-def ingest_data(training=True):
+def ingest_data(dev=DEV):
     """
     load, join and clean json invoice data
     """
     
-    if training:
+    if dev:
         data_dir = os.path.join(PROJECT_ROOT_DIR,DATA_DIR,"train")
     else:
         data_dir = os.path.join(PROJECT_ROOT_DIR,DATA_DIR,"production")
@@ -102,14 +103,14 @@ def convert_to_ts(df, country=None):
     else:
         return df_final.set_index("invoice_date")
     
-def ingest_ts(training=True, clean=True):
+def ingest_ts(clean=True, dev=DEV):
     """
     fetch timeseries data
     if the csv files exist, it reads from the file directory,
     otherwise it creates them from the original data and saves the files
     """
     
-    if training:
+    if dev:
         ts_dir = os.path.join(PROJECT_ROOT_DIR,DATA_DIR,"train-ts")
     else:
         ts_dir = os.path.join(PROJECT_ROOT_DIR,DATA_DIR,"production-ts")
@@ -124,7 +125,7 @@ def ingest_ts(training=True, clean=True):
         return {re.sub("\.csv","",os.path.split(f)[-1]):pd.read_csv(f, index_col=0) for f in ts_files}
         
     ## Load original data
-    df = ingest_data(training=training)
+    df = ingest_data(dev=dev)
     
     ## Find the top ten countries by revenue
     top_10_countries = df.groupby("country")[["price"]].sum().sort_values(by="price",ascending=False)[:10].index.values.tolist()
@@ -150,16 +151,15 @@ def ingest_ts(training=True, clean=True):
         
     return ts
 
-def load_feature_matrix(training=True, clean=False):
+def load_feature_matrix(clean=False, dev=DEV):
     """
     load the clean dataset after ingestion
     """
     
     ## load the dataset
-    ts = ingest_ts(training=training, clean=clean)
+    ts = ingest_ts(clean=clean, dev=dev)
     
     print("...creating feature matrix")
-    
     df = pd.concat(ts, keys=ts.keys(), names=["country"]).reset_index()
 
     ## check the type of the invoice_date
@@ -174,14 +174,15 @@ if __name__ == "__main__":
     print("...fetching data")
   
     ## ingest data
-    ts = ingest_ts(training=True)
+    ts = ingest_ts(dev=DEV)
+    
+    for key, item in ts.items():
+        print(key, item.shape)
     
     ## metadata
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
     print("load time:", "%d:%02d:%02d"%(h, m, s))
     
-    for key, item in ts.items():
-        print(key, item.shape)
     
     print("...done")

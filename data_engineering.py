@@ -11,6 +11,7 @@ from sklearn.pipeline import Pipeline
 
 ## import function to load feature matrix
 from data_ingestion import load_feature_matrix
+from data_ingestion import DEV
 
 class FeatureEngineer(BaseEstimator, TransformerMixin):
     """
@@ -66,13 +67,13 @@ class TargetEngineer(BaseEstimator, TransformerMixin):
         
         return X_eng.reset_index()
 
-def engineer_features(training=True, clean=False):
+def engineer_features(training=False, clean=False, dev=DEV):
     """
     engineer feature matrix and target value
     """
     
     ## load feature matrix
-    fm = load_feature_matrix(training=training, clean=clean)
+    fm = load_feature_matrix(dev=dev, clean=clean)
     
     print("...engineering features and target value")
     
@@ -110,15 +111,21 @@ def engineer_features(training=True, clean=False):
         ## engineer features
         X = pipe_engineer.transform(df)
         
-        ## features quality ckeck
-        date = '2018-02-01'
-        v1 = df.query("invoice_date<@date")[["revenue"]].tail(14).sum().values
-        v2 = X.query("invoice_date==@date")["revenue_m14D"].values.ravel()
+        ## keep the dates
+        dates = X[["invoice_date"]].copy()
+        
+        ## features sanity ckeck
+        test_date = dates.invoice_date.dt.strftime('%Y-%m-%d')[10]
+        v1 = df.query("invoice_date<@test_date")[["revenue"]].tail(14).sum().values
+        v2 = X.query("invoice_date==@test_date")["revenue_m14D"].values.ravel()
         if not np.array_equal(v1.round(2), v2.round(2)):
             print("Opps! Engineer features didn't work as expected")
             
         ## drop original features
         X.drop(features, axis=1, inplace=True)
+        
+        ## keep the names of the engineered features
+        features_labels = X.columns.values
         
         ## build instance to transform target
         target_eng = TargetEngineer()
@@ -126,13 +133,13 @@ def engineer_features(training=True, clean=False):
         ## engineer target
         y = target_eng.transform(df)
         
-        ## target quality check
-        date = '2018-02-01'
-        v1 = df.query("invoice_date>=@date")[["revenue"]].head(30).sum().values
-        v2 = y.query("invoice_date>=@date").head(1)["revenue_p30D"].values.ravel()
+        ## target sanity check
+        v1 = df.query("invoice_date>=@test_date")[["revenue"]].head(30).sum().values
+        v2 = y.query("invoice_date>=@test_date").head(1)["revenue_p30D"].values.ravel()
         if not np.array_equal(v1.round(2), v2.round(2)):
             print("Opps! Engineer target didn't work as expected")
-            
+        
+        ## drop original features
         y.drop(features, axis=1, inplace=True)
             
         if training:
@@ -141,13 +148,13 @@ def engineer_features(training=True, clean=False):
             mask = y["revenue_p30D"].notna()
             X = X[mask]
             y = y[mask]
+            dates = dates[mask]
             X.reset_index(drop=True, inplace=True)
             y.reset_index(drop=True, inplace=True)
-        
-        features_labels = X.columns.values
+            dates.reset_index(drop=True, inplace=True)
         
         ## store them as numpy arrays
-        eng_features[country]= (X.values, y.values.ravel(), features_labels)
+        eng_features[country]= (X.values, y.values.ravel(), dates.values.ravel(), features_labels)
     
     return eng_features
 
@@ -157,10 +164,10 @@ if __name__ == "__main__":
     print("...transforming data")
   
     ## engineer data
-    model_datasets = engineer_features()
+    datasets = engineer_features(training=True, dev=DEV)
     
-    for key, item in model_datasets.items():
-        print(key, item[0].shape, item[1].shape)
+    for key, item in datasets.items():
+        print("{} X:{}, y:{}".format(key.upper(), item[0].shape, item[1].shape))
     
     ## metadata
     m, s = divmod(time.time()-run_start,60)

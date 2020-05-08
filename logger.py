@@ -6,7 +6,10 @@ from datetime import date
 
 PROJECT_DIR = "."
 LOG_DIR = os.path.join("logs")
-DEV = True
+
+
+## import mode
+from data_ingestion import DEV
 
 def update_train_log(tag,algorithm,score,runtime,model_version,model_note,dev=DEV):
     """
@@ -38,5 +41,37 @@ def update_train_log(tag,algorithm,score,runtime,model_version,model_note,dev=DE
             writer.writerow(header)
 
         to_write = map(str,[uuid.uuid4(),time.time(),tag,algorithm,score,runtime,model_version,model_note])
+        writer.writerow(to_write)
+        
+def update_predict_log(tag,y_pred,target_date,runtime,model_version,model_note,dev=DEV):
+    """
+    update predict log file
+    """
+    
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+        
+    ## name the logfile using something that cycles with date (day, month, year)    
+    today = date.today()
+    if dev:
+        logfile = "{}-predict-{}-{}.log".format("test",today.year, today.month)
+    else:
+        logfile = "{}-predict-{}-{}.log".format("prod",today.year, today.month)
+        
+    
+    ## write the data to a csv file
+    logpath = os.path.join(LOG_DIR, logfile)
+    
+    ## write the data to a csv file    
+    header = ["unique_id","timestamp",'tag','y_pred',"target_date","runtime",'model_version','model_note']
+    write_header = False
+    if not os.path.exists(logpath):
+        write_header = True
+    with open(logpath,'a') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+        if write_header:
+            writer.writerow(header)
+
+        to_write = map(str,[uuid.uuid4(),time.time(),tag,y_pred,target_date,runtime,model_version,model_note])
         writer.writerow(to_write)
     

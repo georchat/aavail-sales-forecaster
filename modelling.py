@@ -2,6 +2,7 @@
 
 import time,os,re,csv,sys,uuid,joblib
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 plt.style.use('seaborn')
 from sklearn.model_selection import learning_curve
@@ -18,12 +19,12 @@ PROJECT_ROOT_DIR = "."
 MODEL_DIR = os.path.join("models")
 MODEL_VERSION = 0.1
 MODEL_VERSION_NOTE = "supervised learing model for time-series"
-DEV = True
 
 ## load from project package
+from data_ingestion import DEV
 from data_engineering import engineer_features
 from data_visualization import save_fig
-from logger import update_train_log
+from logger import update_train_log, update_predict_log
 
 def plot_learning_curve(estimator, X, y, ax=None, cv=5):
     """
@@ -120,7 +121,7 @@ def make_compare_plot(X, y, models):
         ax.set_ylim([ymin.min(), ymax.max()])
         
         
-def plot_feature_importance(reg, feature_names):
+def plot_feature_importance(estimator, feature_names):
     """
     plot feature importance
     """
@@ -128,7 +129,7 @@ def plot_feature_importance(reg, feature_names):
     ax = fig.add_subplot(111)
     
     # make importances relative to max importance
-    feature_importance = reg.feature_importances_
+    feature_importance = estimator.feature_importances_
     feature_importance = 100.0 * (feature_importance / feature_importance.max())
     sorted_idx = np.argsort(feature_importance)
     pos = np.arange(sorted_idx.shape[0]) + .5
@@ -139,8 +140,7 @@ def plot_feature_importance(reg, feature_names):
     ax.set_title('Variable Importance')
     
 
-def _train_model(X, y, feature_names, tag="total", rs=42, dev=DEV,
-                 save_img=False):
+def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DEV):
     """
     train four models (SGD, RF, GB, ADA) and select the best one
     """
@@ -211,7 +211,7 @@ def _train_model(X, y, feature_names, tag="total", rs=42, dev=DEV,
              "GB":"Gradient Boosting",
              "ADA":"Ada Boosting"}
 
-    print("best model:{}".format(vocab[bm]))
+    print("...best model:{}".format(vocab[bm]))
 
     ## retrain best model on the the full dataset
     opt_model.fit(X, y)
@@ -239,46 +239,117 @@ def _train_model(X, y, feature_names, tag="total", rs=42, dev=DEV,
     runtime = "%03d:%02d:%02d"%(h, m, s)
             
     ## update log
-    update_train_log(tag,vocab[bm],{'rmse':max(val_scores)},runtime,MODEL_VERSION, MODEL_VERSION_NOTE, dev=dev)
+    update_train_log(tag.upper(),vocab[bm],{'rmse':max(val_scores)},runtime,MODEL_VERSION, MODEL_VERSION_NOTE, dev=dev)
 
 
-def train_models(dev=DEV):
+def train_models(save_img=False,dev=DEV):
     """
     train models
     """
     
     if dev:
         print("...developing mode")
+    else:
+        print("...production mode")
     
     ## load engineered features
-    model_datasets = engineer_features()
+    datasets = engineer_features(dev=dev, training=True)
     
     ## build, train and save models
-    for country, dataset in model_datasets.items():
+    for country in datasets.keys():
         tag = country
-        print("...training model for {}".format(tag.upper()))
-        X, y, feature_names = model_datasets[tag]
-        _train_model(X, y, feature_names, tag=tag, dev=dev)
+        print("training model for {}".format(tag.upper()))
+        X, y, dates, feature_names = datasets[tag]
+        _train_model(X, y, feature_names, tag=tag, dev=dev, save_img=save_img)
 
         
-def load_models(prefix='test',model_dir=MODEL_DIR,training=True):
+def load_models(model_dir=MODEL_DIR, dev=DEV):
     """
     load models
     """
-
+    
+    if dev:
+        prefix = "test"
+    else:
+        prefix = "prod"
+    
     if not os.path.exists(model_dir):
         raise Exception("Opps! Model dir does not exist")
     
+    ## list model files from model directory
     models = [f for f in os.listdir(model_dir) if re.search(prefix,f)]
 
     if len(models) == 0:
         raise Exception("Models with prefix '{}' cannot be found did you train?".format(prefix))
-
+    
+    ## load models
     all_models = {}
     for model in models:
         all_models[re.split("-",model)[1]] = joblib.load(os.path.join(model_dir,model))
         
     return(all_models)
+
+def predict_model(year, month, day, country, dev=DEV):
+    """
+    make predictions
+    """
+    
+    if dev:
+        print("...developing mode")
+    else:
+        print("...production mode")
+    
+    ## start timer for runtime
+    time_start = time.time()
+    
+    ## load models
+    models = load_models(dev=dev)
+    
+    ## load data
+    datasets = engineer_features(training=False, dev=dev)
+    
+    ## check if the model is available
+    if country not in models.keys():
+        raise Exception("ERROR (model_predict) - model for country '{}' could not be found".format(country))
+    
+    ## ckeck if the data is available
+    if country not in datasets.keys():
+        raise Exception("ERROR (model_predict) - dataset for country '{}' could not be found".format(country))
+    
+    
+    ## ensure the year, month day are numbers
+    for d in [year,month,day]:
+        if re.search("\D",d):
+            raise Exception("ERROR (model_predict) - invalid year, month or day")
+    
+    ## get the dataset and model for the given country    
+    X, y, dates, labels = datasets[country]
+    df = pd.DataFrame(X, columns=labels, index=dates)
+    model = models[country]
+    
+    ## check date
+    target_date = "{}-{}-{}".format(year,str(month).zfill(2),str(day).zfill(2))
+    print(target_date)
+    
+    if target_date not in df.index.strftime('%Y-%m-%d'):
+        raise Exception("ERROR (model_predict) - {} not in range {} and {}".format(target_date,df.index.strftime('%Y-%m-%d')[0],df.index.strftime('%Y-%m-%d')[-1]))
+    
+    ## query the data
+    query = pd.to_datetime(target_date)
+    X_pred = df.loc[pd.to_datetime(query),:].values.reshape(1, -1)
+    
+    ## make prediction
+    y_pred = model.predict(X_pred)
+    
+    m, s = divmod(time.time()-time_start, 60)
+    h, m = divmod(m, 60)
+    runtime = "%03d:%02d:%02d"%(h, m, s)
+    
+    ## update predict log
+    update_predict_log(country.upper(),y_pred,target_date,runtime,MODEL_VERSION, MODEL_VERSION_NOTE,dev=dev)
+    
+    return({"y_pred":y_pred})
+    
 
 if __name__ == "__main__":
     
@@ -286,16 +357,25 @@ if __name__ == "__main__":
     print("...modelling")
   
     ## train models
-    train_models()
+    print("TRAINING MODELS")
+    train_models(dev=DEV)
     
     ## load models
-    models = load_models()
+    print("LOADING MODELS")
+    models = load_models(dev=DEV)
     
-    ## metadata
+    ## models metadata
     for key, item in models.items():
         print("label:{}, algorithm:{}".format(key, type(item.best_estimator_["reg"]).__name__))
     
-    ## metadata
+    ## test predict
+    print("PREDICT")
+    if DEV:
+        result = predict_model(country="total",year="2018",month="01",day="05", dev=DEV)
+    else:
+        result = predict_model(country="total",year="2019",month="09",day="05", dev=DEV)
+    print(result)
+    
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
     print("running time:", "%d:%02d:%02d"%(h, m, s))

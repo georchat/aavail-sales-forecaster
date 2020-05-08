@@ -1,0 +1,23 @@
+unique_id,timestamp,tag,score,runtime,model_version,model_note
+7a9905dd-ef3f-4f0b-aae5-7fda4fa58130,1588936965.673056,BELGIUM,Random Forest,{'rmse': 140.77981790901663},000:00:52,0.1,supervised learing model for time-series
+e83ba379-22bf-4cd4-8b6e-d420b5d0744f,1588936970.8080587,EIRE,Ada Boosting,{'rmse': 458.0280333889965},000:00:05,0.1,supervised learing model for time-series
+9524d72c-9e86-4e79-9ea7-c6a8b2cc02aa,1588936976.410054,FRANCE,Random Forest,{'rmse': 1798.102530245146},000:00:05,0.1,supervised learing model for time-series
+b395e8cf-b622-430a-a1d5-68667d586018,1588936981.179054,GERMANY,Gradient Boosting,{'rmse': 587.6740825051725},000:00:04,0.1,supervised learing model for time-series
+c8be947f-8173-41ca-972f-9df3995eb74f,1588936985.593055,HONG_KONG,Gradient Boosting,{'rmse': 1299.1346366067282},000:00:04,0.1,supervised learing model for time-series
+d0c14a43-0cc8-47c0-868d-820a5a3a7845,1588936991.326058,NETHERLANDS,Random Forest,{'rmse': 111.73993292532847},000:00:05,0.1,supervised learing model for time-series
+c72660e1-891e-4945-b51d-8ad1e689726c,1588936997.2650547,PORTUGAL,Random Forest,{'rmse': 714.2146395464088},000:00:05,0.1,supervised learing model for time-series
+4d89fe46-d2af-4468-a306-63ba7792d4fd,1588937000.577055,SINGAPORE,Ada Boosting,{'rmse': 5011.057993186111},000:00:03,0.1,supervised learing model for time-series
+5b4a84de-45f0-4bd0-a9b7-100717194502,1588937006.9300542,SPAIN,Random Forest,{'rmse': 144.21112699712154},000:00:06,0.1,supervised learing model for time-series
+5cb19f53-5bc8-46e7-ad2c-4af10c81f14e,1588937013.5730548,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:06,0.1,supervised learing model for time-series
+67961161-f42c-42e6-9200-cf593c48055b,1588937019.3975859,UNITED_KINGDOM,Gradient Boosting,{'rmse': 27761.690351272406},000:00:05,0.1,supervised learing model for time-series
+5610fcd2-ae93-44c8-b703-d27d3e42ae5f,1588937329.0701215,BELGIUM,Random Forest,{'rmse': 140.77981790901663},000:00:06,0.1,supervised learing model for time-series
+57fdc6ea-5c7d-414a-bb03-d8036d9a6dda,1588937333.930692,EIRE,Ada Boosting,{'rmse': 458.0280333889965},000:00:04,0.1,supervised learing model for time-series
+afaffd63-a84d-488c-b769-869529f8bc11,1588937339.6301746,FRANCE,Random Forest,{'rmse': 1798.102530245146},000:00:05,0.1,supervised learing model for time-series
+c4760db1-7c0e-46c5-8520-af487a5e3e3e,1588937344.5531776,GERMANY,Gradient Boosting,{'rmse': 587.6740825051725},000:00:04,0.1,supervised learing model for time-series
+2afd36ec-2506-40ee-87a3-22daba34c6f3,1588937349.4111772,HONG_KONG,Gradient Boosting,{'rmse': 1299.1346366067282},000:00:04,0.1,supervised learing model for time-series
+3880a573-4ba3-4124-a604-b25f0c8afebd,1588937355.6901765,NETHERLANDS,Random Forest,{'rmse': 111.73993292532847},000:00:06,0.1,supervised learing model for time-series
+56d901c6-d78b-46b0-a707-a3d7d8c0bb36,1588937361.7407007,PORTUGAL,Random Forest,{'rmse': 714.2146395464088},000:00:06,0.1,supervised learing model for time-series
+560ceddf-d4b8-4fe7-a799-168275c349f4,1588937365.011701,SINGAPORE,Ada Boosting,{'rmse': 5011.057993186111},000:00:03,0.1,supervised learing model for time-series
+5c7364a9-bf6c-40c7-82f2-6b6cf2621264,1588937371.0262368,SPAIN,Random Forest,{'rmse': 144.21112699712154},000:00:06,0.1,supervised learing model for time-series
+57932a55-7434-4af8-bb1d-0ae31a57a4f5,1588937377.021757,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+0acc4714-66b8-4e5f-a9ab-4005aee11957,1588937382.1997578,UNITED_KINGDOM,Gradient Boosting,{'rmse': 27761.690351272406},000:00:05,0.1,supervised learing model for time-series
