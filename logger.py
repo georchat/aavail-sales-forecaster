@@ -11,10 +11,12 @@ LOG_DIR = os.path.join("logs")
 ## import mode
 from data_ingestion import DEV
 
-def update_train_log(tag,algorithm,score,runtime,model_version,model_note,dev=DEV):
+def _update_train_log(tag,algorithm,score,runtime,model_version,model_note,dev=DEV, verbose=True):
     """
     update train log file
     """
+    if verbose:
+        print("...updating train log")
     
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
@@ -43,10 +45,13 @@ def update_train_log(tag,algorithm,score,runtime,model_version,model_note,dev=DE
         to_write = map(str,[uuid.uuid4(),time.time(),tag,algorithm,score,runtime,model_version,model_note])
         writer.writerow(to_write)
         
-def update_predict_log(tag,y_pred,target_date,runtime,model_version,model_note,dev=DEV):
+def _update_predict_log(tag,y_pred,target_date,runtime,model_version,model_note,dev=DEV, verbose=True):
     """
     update predict log file
     """
+    
+    if verbose:
+        print("...update predict log")
     
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
@@ -74,4 +79,14 @@ def update_predict_log(tag,y_pred,target_date,runtime,model_version,model_note,d
 
         to_write = map(str,[uuid.uuid4(),time.time(),tag,y_pred,target_date,runtime,model_version,model_note])
         writer.writerow(to_write)
+        
+def log_load(tag,year,month,env,verbose=True):
+    """
+    load requested log file
+    """
+    logfile = "{}-{}-{}-{}.log".format(env,tag,year,month)
+    
+    if verbose:
+        print(logfile)
+    return logfile
     

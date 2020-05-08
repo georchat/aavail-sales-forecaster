@@ -24,9 +24,9 @@ MODEL_VERSION_NOTE = "supervised learing model for time-series"
 from data_ingestion import DEV
 from data_engineering import engineer_features
 from data_visualization import save_fig
-from logger import update_train_log, update_predict_log
+from logger import _update_train_log, _update_predict_log
 
-def plot_learning_curve(estimator, X, y, ax=None, cv=5):
+def _plot_learning_curve(estimator, X, y, ax=None, cv=5):
     """
     an sklearn estimator 
     """
@@ -69,7 +69,7 @@ def plot_learning_curve(estimator, X, y, ax=None, cv=5):
     ax.legend(loc="best")
 
 
-def make_compare_plot(X, y, models):
+def _make_compare_plot(X, y, models, verbose=True):
     """
     create learning curves for SGD, RF, GB and ADA
     """
@@ -79,13 +79,14 @@ def make_compare_plot(X, y, models):
     ax3 = fig.add_subplot(223)
     ax4 = fig.add_subplot(224)
     
-    print("...creating learning curves")
+    if verbose:
+        print("...creating learning curves")
     
     ## SGD
     reg1 = SGDRegressor(**models["SGD"][1])
     pipe1 = Pipeline(steps=[("scaler", StandardScaler()),
                             ("reg", reg1)])
-    plot_learning_curve(pipe1, X, y, ax=ax1)
+    _plot_learning_curve(pipe1, X, y, ax=ax1)
     ax1.set_title("Stochastic Gradient Regressor")
     ax1.set_xlabel("")
     
@@ -93,7 +94,7 @@ def make_compare_plot(X, y, models):
     reg2 = RandomForestRegressor(**models["RF"][1])
     pipe2 = Pipeline(steps=[("scaler", StandardScaler()),
                             ("reg", reg2)])
-    plot_learning_curve(pipe2, X, y, ax=ax2)
+    _plot_learning_curve(pipe2, X, y, ax=ax2)
     ax2.set_title("Random Forest Regressor")
     ax2.set_xlabel("")
     ax2.set_ylabel("")
@@ -102,14 +103,14 @@ def make_compare_plot(X, y, models):
     reg3 = GradientBoostingRegressor(**models["GB"][1])
     pipe3 = Pipeline(steps=[("scaler", StandardScaler()),
                             ("reg", reg3)])
-    plot_learning_curve(pipe3, X, y, ax=ax3)
+    _plot_learning_curve(pipe3, X, y, ax=ax3)
     ax3.set_title("Gradient Boosting Regressor")
     
     ## ada boosting
     reg4 = AdaBoostRegressor(**models["ADA"][1])
     pipe4 = Pipeline(steps=[("scaler", StandardScaler()),
                             ("reg", reg4)])
-    plot_learning_curve(pipe3, X, y, ax=ax4)
+    _plot_learning_curve(pipe3, X, y, ax=ax4)
     ax4.set_title("Ada Boosting Regressor")
     ax4.set_ylabel("")
     
@@ -121,10 +122,14 @@ def make_compare_plot(X, y, models):
         ax.set_ylim([ymin.min(), ymax.max()])
         
         
-def plot_feature_importance(estimator, feature_names):
+def _plot_feature_importance(estimator, feature_names, verbose=True):
     """
     plot feature importance
     """
+    
+    if verbose:
+        print("...plotting feature importance")
+        
     fig = plt.figure(figsize=(8, 6), facecolor="white")
     ax = fig.add_subplot(111)
     
@@ -140,7 +145,7 @@ def plot_feature_importance(estimator, feature_names):
     ax.set_title('Variable Importance')
     
 
-def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DEV):
+def _model_train(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DEV, verbose=True):
     """
     train four models (SGD, RF, GB, ADA) and select the best one
     """
@@ -177,8 +182,9 @@ def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DE
     total = len(regressor_names)
     for iteration, (name,regressor,param) in enumerate(zip(regressor_names, regressors, params)):
         
-        end = "" if (iteration+1) < total else "\n"
-        print("\r...training model: {}/{}".format(iteration+1,total), end=end)
+        if verbose:
+            end = "" if (iteration+1) < total else "\n"
+            print("\r...training model: {}/{}".format(iteration+1,total), end=end)
         
         pipe = Pipeline(steps=[("scaler", StandardScaler()),
                                ("reg", regressor)])
@@ -192,7 +198,7 @@ def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DE
         
     ## plot learning curves
     if save_img:
-        make_compare_plot(X, y, models=models)
+        _make_compare_plot(X, y, models=models, verbose=verbose)
         save_fig("{}_learning_curves".format(tag))
     
     ## evaluation on the validation set
@@ -210,8 +216,9 @@ def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DE
              "SGD":"Stochastic Gradient",
              "GB":"Gradient Boosting",
              "ADA":"Ada Boosting"}
-
-    print("...best model:{}".format(vocab[bm]))
+    
+    if verbose:
+        print("...best model:{}".format(vocab[bm]))
 
     ## retrain best model on the the full dataset
     opt_model.fit(X, y)
@@ -231,7 +238,7 @@ def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DE
     
     if save_img:
         if 'feature_importances_' in dir(opt_model.best_estimator_["reg"]):
-            plot_feature_importance(opt_model.best_estimator_["reg"], feature_names=feature_names)
+            _plot_feature_importance(opt_model.best_estimator_["reg"], feature_names=feature_names, verbose=verbose)
             save_fig("{}_features_importance".format(tag))
     
     m, s = divmod(time.time()-time_start, 60)
@@ -239,34 +246,36 @@ def _train_model(X, y, feature_names, tag="total", rs=42, save_img=False, dev=DE
     runtime = "%03d:%02d:%02d"%(h, m, s)
             
     ## update log
-    update_train_log(tag.upper(),vocab[bm],{'rmse':max(val_scores)},runtime,MODEL_VERSION, MODEL_VERSION_NOTE, dev=dev)
+    _update_train_log(tag.upper(),vocab[bm],{'rmse':max(val_scores)},runtime,MODEL_VERSION, MODEL_VERSION_NOTE, dev=dev, verbose=verbose)
 
 
-def train_models(save_img=False,dev=DEV):
+def model_train(save_img=False,dev=DEV, verbose=True):
     """
     train models
     """
     
-    if dev:
-        print("...developing mode")
-    else:
-        print("...production mode")
-    
     ## load engineered features
-    datasets = engineer_features(dev=dev, training=True)
+    datasets = engineer_features(dev=dev, training=True, verbose=verbose)
+    
+    if verbose:
+        print("Training Models")
     
     ## build, train and save models
     for country in datasets.keys():
         tag = country
-        print("training model for {}".format(tag.upper()))
+        if verbose:
+            print("...training model for {}".format(tag.upper()))
         X, y, dates, feature_names = datasets[tag]
-        _train_model(X, y, feature_names, tag=tag, dev=dev, save_img=save_img)
+        _model_train(X, y, feature_names, tag=tag, dev=dev, save_img=save_img, verbose=verbose)
 
         
-def load_models(model_dir=MODEL_DIR, dev=DEV):
+def model_load(model_dir=MODEL_DIR, dev=DEV, verbose=True):
     """
     load models
     """
+    
+    if verbose:
+        print("Loading Models")
     
     if dev:
         prefix = "test"
@@ -289,24 +298,22 @@ def load_models(model_dir=MODEL_DIR, dev=DEV):
         
     return(all_models)
 
-def predict_model(year, month, day, country, dev=DEV):
+def model_predict(year, month, day, country, dev=DEV, verbose=True):
     """
     make predictions
     """
     
-    if dev:
-        print("...developing mode")
-    else:
-        print("...production mode")
-    
     ## start timer for runtime
     time_start = time.time()
     
-    ## load models
-    models = load_models(dev=dev)
-    
     ## load data
-    datasets = engineer_features(training=False, dev=dev)
+    datasets = engineer_features(training=False, dev=dev, verbose=verbose)
+    
+    ## load models
+    models = model_load(dev=dev, verbose=verbose)
+    
+    if verbose:
+        print("Make Prediction")
     
     ## check if the model is available
     if country not in models.keys():
@@ -329,7 +336,9 @@ def predict_model(year, month, day, country, dev=DEV):
     
     ## check date
     target_date = "{}-{}-{}".format(year,str(month).zfill(2),str(day).zfill(2))
-    print(target_date)
+    
+    if verbose:
+        print(target_date)
     
     if target_date not in df.index.strftime('%Y-%m-%d'):
         raise Exception("ERROR (model_predict) - {} not in range {} and {}".format(target_date,df.index.strftime('%Y-%m-%d')[0],df.index.strftime('%Y-%m-%d')[-1]))
@@ -346,7 +355,7 @@ def predict_model(year, month, day, country, dev=DEV):
     runtime = "%03d:%02d:%02d"%(h, m, s)
     
     ## update predict log
-    update_predict_log(country.upper(),y_pred,target_date,runtime,MODEL_VERSION, MODEL_VERSION_NOTE,dev=dev)
+    _update_predict_log(country.upper(),y_pred,target_date,runtime,MODEL_VERSION, MODEL_VERSION_NOTE,dev=dev, verbose=verbose)
     
     return({"y_pred":y_pred})
     
@@ -354,30 +363,25 @@ def predict_model(year, month, day, country, dev=DEV):
 if __name__ == "__main__":
     
     run_start = time.time()
-    print("...modelling")
   
     ## train models
-    print("TRAINING MODELS")
-    train_models(dev=DEV)
+    model_train(dev=DEV)
     
     ## load models
-    print("LOADING MODELS")
-    models = load_models(dev=DEV)
-    
-    ## models metadata
-    for key, item in models.items():
-        print("label:{}, algorithm:{}".format(key, type(item.best_estimator_["reg"]).__name__))
+    models = model_load(dev=DEV, verbose=False)
     
     ## test predict
-    print("PREDICT")
-    if DEV:
-        result = predict_model(country="total",year="2018",month="01",day="05", dev=DEV)
-    else:
-        result = predict_model(country="total",year="2019",month="09",day="05", dev=DEV)
-    print(result)
+    result = model_predict(country="total",year="2018",month="01",day="05", dev=DEV)
+        
+    ## metadata
+    print("METADATA")
+    for key, item in models.items():
+        print("...label:{}, algorithm:{}".format(key, type(item.best_estimator_["reg"]).__name__))
+    
+    print("...result {}".format(result))
     
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
-    print("running time:", "%d:%02d:%02d"%(h, m, s))
+    print("...running time:", "%d:%02d:%02d"%(h, m, s))
     
-    print("...done")
+    print("done")

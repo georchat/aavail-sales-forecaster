@@ -49,7 +49,7 @@ def create_plots(df):
     """
     create plots for data visualization
     """
-    print("...creating plots")
+    print("Creating Plots")
     
     ## Analyze Total revenues over time
     fig = plt.figure(figsize=(8,6))
@@ -100,13 +100,13 @@ def create_plots(df):
 if __name__ == "__main__":
     
     run_start = time.time()
-    print("...plotting")
     
     df = load_feature_matrix(dev=DEV, clean=False)
     create_plots(df)
     
+    print("METADATA")
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
-    print("load time:", "%d:%02d:%02d"%(h, m, s))
+    print("...run time:", "%d:%02d:%02d"%(h, m, s))
     
-    print("...done")
+    print("done")

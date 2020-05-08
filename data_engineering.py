@@ -67,15 +67,16 @@ class TargetEngineer(BaseEstimator, TransformerMixin):
         
         return X_eng.reset_index()
 
-def engineer_features(training=False, clean=False, dev=DEV):
+def engineer_features(training=False, clean=False, dev=DEV, verbose=True):
     """
     engineer feature matrix and target value
     """
     
     ## load feature matrix
-    fm = load_feature_matrix(dev=dev, clean=clean)
+    fm = load_feature_matrix(dev=dev, clean=clean, verbose=verbose)
     
-    print("...engineering features and target value")
+    if verbose:
+        print("Engineering Features and Target")
     
     ## ensure that all days are accounted for each country
     fm = fm.set_index(["invoice_date","country"]).unstack(1).asfreq("1D")
@@ -161,18 +162,18 @@ def engineer_features(training=False, clean=False, dev=DEV):
 if __name__ == "__main__":
     
     run_start = time.time()
-    print("...transforming data")
   
     ## engineer data
     datasets = engineer_features(training=True, dev=DEV)
     
+    print("METADATA")
     for key, item in datasets.items():
-        print("{} X:{}, y:{}".format(key.upper(), item[0].shape, item[1].shape))
+        print("...{} X:{}, y:{}".format(key.upper(), item[0].shape, item[1].shape))
     
     ## metadata
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
-    print("load time:", "%d:%02d:%02d"%(h, m, s))
+    print("...run time:", "%d:%02d:%02d"%(h, m, s))
     
-    print("...done")
+    print("done")
     

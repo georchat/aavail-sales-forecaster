@@ -12,7 +12,7 @@ PROJECT_ROOT_DIR = "."
 DATA_DIR = os.path.join("data")
 DEV = True
    
-def ingest_data(dev=DEV):
+def _ingest_data(dev=DEV, verbose=True):
     """
     load, join and clean json invoice data
     """
@@ -30,16 +30,19 @@ def ingest_data(dev=DEV):
         raise Exception("specified data dir does not contain any files")
         
     ## create a list with all json files in the data directory
-    print("...reading from json files")
+    if verbose:
+        print("...reading from json files")
     json_files = [os.path.join(data_dir,f) for f in os.listdir(data_dir) if re.search("\.json",f)]
     
     ## read json file from the data directory
     total = len(json_files)
-    print("...{} json files in the '{}' directory".format(total, data_dir))
+    if verbose:
+        print("...{} json files in the '{}' directory".format(total, data_dir))
     aavail_data = {}
     for iteration,json_file in enumerate(json_files):
-        end = "" if (iteration+1) < total else "\n"
-        print("\r...reading file: {}/{}".format(iteration+1,total), end=end)
+        if verbose:
+            end = "" if (iteration+1) < total else "\n"
+            print("\r...reading file: {}/{}".format(iteration+1,total), end=end)
         key = os.path.split(json_file)[-1]
         df = pd.read_json(json_file)
         aavail_data[key] = df
@@ -71,7 +74,7 @@ def ingest_data(dev=DEV):
     
     return df
 
-def convert_to_ts(df, country=None):
+def _convert_to_ts(df, country=None):
     """
     convert the original clean dataframe to a time series
     by aggregating over each day for the given country
@@ -103,12 +106,15 @@ def convert_to_ts(df, country=None):
     else:
         return df_final.set_index("invoice_date")
     
-def ingest_ts(clean=True, dev=DEV):
+def ingest_ts(clean=True, dev=DEV, verbose=True):
     """
     fetch timeseries data
     if the csv files exist, it reads from the file directory,
     otherwise it creates them from the original data and saves the files
     """
+    
+    if verbose:
+        print("Ingesting Data")
     
     if dev:
         ts_dir = os.path.join(PROJECT_ROOT_DIR,DATA_DIR,"train-ts")
@@ -120,12 +126,13 @@ def ingest_ts(clean=True, dev=DEV):
         os.makedirs(ts_dir)
         
     if (len(os.listdir(ts_dir)) > 0) & (clean == False):
-        print("...loading timeseries data from files")
+        if verbose:
+            print("...loading timeseries data from files")
         ts_files = [os.path.join(ts_dir,f) for f in os.listdir(ts_dir) if re.search("\.csv",f)]
         return {re.sub("\.csv","",os.path.split(f)[-1]):pd.read_csv(f, index_col=0) for f in ts_files}
         
     ## Load original data
-    df = ingest_data(dev=dev)
+    df = _ingest_data(dev=dev, verbose=verbose)
     
     ## Find the top ten countries by revenue
     top_10_countries = df.groupby("country")[["price"]].sum().sort_values(by="price",ascending=False)[:10].index.values.tolist()
@@ -136,14 +143,15 @@ def ingest_ts(clean=True, dev=DEV):
     
     ## Convert the data to timeseries
     ts = {}
-    print("...converting data to timeseries")
+    if verbose:
+        print("...converting data to timeseries")
     for country in countries:
         
         key = re.sub("\s+","_",country.lower())
         if key == "total":
-            ts[key] = convert_to_ts(df)
+            ts[key] = _convert_to_ts(df)
         else:
-            ts[key] = convert_to_ts(df, country=country)
+            ts[key] = _convert_to_ts(df, country=country)
         
         ## write file
         csv_path = os.path.join(ts_dir,"{}.csv".format(key))
@@ -151,15 +159,17 @@ def ingest_ts(clean=True, dev=DEV):
         
     return ts
 
-def load_feature_matrix(clean=False, dev=DEV):
+def load_feature_matrix(clean=False, dev=DEV, verbose=True):
     """
     load the clean dataset after ingestion
     """
     
     ## load the dataset
-    ts = ingest_ts(clean=clean, dev=dev)
+    ts = ingest_ts(clean=clean, dev=dev, verbose=verbose)
     
-    print("...creating feature matrix")
+    if verbose:
+        print("Creating Feature Matrix")
+    
     df = pd.concat(ts, keys=ts.keys(), names=["country"]).reset_index()
 
     ## check the type of the invoice_date
@@ -171,18 +181,17 @@ def load_feature_matrix(clean=False, dev=DEV):
 if __name__ == "__main__":
     
     run_start = time.time()
-    print("...fetching data")
   
     ## ingest data
     ts = ingest_ts(dev=DEV)
     
+    print("METADATA")
     for key, item in ts.items():
-        print(key, item.shape)
+        print("...{} {}".format(key, item.shape))
     
     ## metadata
     m, s = divmod(time.time()-run_start,60)
     h, m = divmod(m, 60)
-    print("load time:", "%d:%02d:%02d"%(h, m, s))
+    print("...run time:", "%d:%02d:%02d"%(h, m, s))
     
-    
-    print("...done")
+    print("done")
