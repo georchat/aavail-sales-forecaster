@@ -21,3 +21,12 @@ c4760db1-7c0e-46c5-8520-af487a5e3e3e,1588937344.5531776,GERMANY,Gradient Boostin
 5c7364a9-bf6c-40c7-82f2-6b6cf2621264,1588937371.0262368,SPAIN,Random Forest,{'rmse': 144.21112699712154},000:00:06,0.1,supervised learing model for time-series
 57932a55-7434-4af8-bb1d-0ae31a57a4f5,1588937377.021757,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
 0acc4714-66b8-4e5f-a9ab-4005aee11957,1588937382.1997578,UNITED_KINGDOM,Gradient Boosting,{'rmse': 27761.690351272406},000:00:05,0.1,supervised learing model for time-series
+9a75aadb-fbf4-489b-a330-e19f90b85683,1589010030.4237168,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+7645e845-0c48-4c9a-8457-1acced7f7c51,1589010062.9321942,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+c61be5f3-83aa-4cbf-a5e3-7030b446d3b1,1589010420.3636324,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:07,0.1,supervised learing model for time-series
+0501df0f-9b15-4580-8835-11f5c6c4e676,1589010495.5881906,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+094baf3e-1a48-465a-b1ab-523e9d82c1af,1589010543.3405983,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+a0ffbb9e-c2c2-4511-a9e2-53dd1bf6a131,1589010816.642459,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+a0dd385f-91c3-4b13-a4eb-1bd3e476c0df,1589010961.2930708,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:05,0.1,supervised learing model for time-series
+c80720bf-f1b4-4ad9-9494-6748f6370bd3,1589011236.2014287,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:06,0.1,supervised learing model for time-series
+6c58c12b-0cb1-4d70-a412-c2b6d702bf6a,1589011413.5981526,TOTAL,Random Forest,{'rmse': 24674.256335452057},000:00:07,0.1,supervised learing model for time-series
