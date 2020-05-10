@@ -46,7 +46,7 @@ From the project directory start the app:
 $ python app.py
 ```
 
-Then went to [http://localhost:8080/](http://localhost:8080/).
+Then went to [http://localhost:8080/](http://localhost:8080/)
 
 ### Unit Tests
 The unit tests for the Model, API and Logs are created as package **unittests**. You can access the code in the sub-directory *unittests*.
@@ -54,7 +54,7 @@ The unit tests for the Model, API and Logs are created as package **unittests**.
 From the project directory run Unit Tests with a single script
 
 ```bash
-    ~$ python run-tests.py
+$ python run-tests.py
 ```
 
 ### Docker Container
@@ -63,19 +63,19 @@ From the project directory run Unit Tests with a single script
 Step one: build the image (from the directory that was created with this notebook)
  
 ```bash
-    ~$ docker build -t capstone-ml-app .
+$ docker build -t capstone-ml-app .
 ```
 
 Check that the image is there.
 
 ```bash
-    ~$ docker image ls
+$ docker image ls
 ```
 
 You may notice images that you no longer use.  You may delete them with
 
 ```bash
-    ~$ docker image rm IMAGE_ID_OR_NAME
+$ docker image rm IMAGE_ID_OR_NAME
 ```
 
 Run the container
