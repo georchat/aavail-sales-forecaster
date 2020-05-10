@@ -81,7 +81,7 @@ $ docker image rm IMAGE_ID_OR_NAME
 Run the container
 
 ```bash
-docker run -p 4000:8080 capstone-ml-app
+$ docker run -p 4000:8080 capstone-ml-app
 ```
 
 Test the running app
