@@ -53,7 +53,7 @@ def model_monitor(country="total", dev=DEV, training=True):
         queries = [(str(d.year), str(d.month), str(d.day), country) for d in dates_new]
         y_pred = [model_predict(year=query[0], month=query[1], day=query[2], country=query[3],verbose=False, dev=dev)["y_pred"][0].round(2) for query in queries]
         rmse = np.sqrt(mean_squared_error(y_new.tolist(),y_pred))
-        print("RSME: {}".format(rmse.round(2)))
+        print("sample size: {}, RSME: {}".format(n, rmse.round(2)))
         
     ## monitor performance
     ## scaling

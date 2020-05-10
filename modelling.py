@@ -323,7 +323,6 @@ def model_predict(year, month, day, country, dev=DEV, verbose=True):
     if country not in datasets.keys():
         raise Exception("ERROR (model_predict) - dataset for country '{}' could not be found".format(country))
     
-    
     ## ensure the year, month day are numbers
     for d in [year,month,day]:
         if re.search("\D",d):
