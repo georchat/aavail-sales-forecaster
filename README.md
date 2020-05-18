@@ -24,13 +24,13 @@ All images created are saved in the *images* sub-directory.
 ## Part 2
 Please refer to the notebook `part2-model-building-and-selection.ipynb` to get detailed insights into Part 2 solution. A slide show is also available in the *documentation* sub-directory.
 
-## Data Engineering
+### Data Engineering
 To run the data ingestion script
 ```bash
 $ python data_ingestion.py
 ```
 
-## Modelling
+### Modelling
 To run the modelling script
 ```bash
 $ python modelling.py
@@ -48,7 +48,7 @@ From the project directory start the app:
 $ python app.py
 ```
 
-Then went to [http://localhost:8080/](http://localhost:8080/)
+Then go to [http://localhost:8080/](http://localhost:8080/)
 
 ### Unit Tests
 The unit tests for the Model, API and Logs are created as package **unittests**. You can access the code in the sub-directory *unittests*.
