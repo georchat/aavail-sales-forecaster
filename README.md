@@ -25,9 +25,9 @@ All images created are saved in the *images* sub-directory.
 Please refer to the notebook `part2-model-building-and-selection.ipynb` to get detailed insights into Part 2 solution. A slide show is also available in the *documentation* sub-directory.
 
 ### Data Engineering
-To run the data ingestion script
+To run the data engineering script
 ```bash
-$ python data_ingestion.py
+$ python data_engineering.py
 ```
 
 ### Modelling
